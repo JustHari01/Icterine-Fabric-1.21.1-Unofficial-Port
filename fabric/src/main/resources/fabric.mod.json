@@ -1,0 +1,35 @@
+{
+    "schemaVersion": 1,
+    "id": "${mod_id}",
+    "version": "${version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "Mephodio (original mod)",
+        "${mod_author} (1.21.1 port)"
+    ],
+    "contact": {
+        "sources": "${source_code}",
+        "issues": "${issue_tracker}",
+        "homepage": "${discord}"
+    },
+    "license": "${license}",
+    "icon": "${mod_id}.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "pm.meh.icterine.Icterine"
+        ]
+    },
+    "mixins": [
+        "${mod_id}.mixins.json",
+        "${mod_id}.fabric.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${fabric_loader_version}",
+        "fabric-api": "*",
+        "minecraft": "${minecraft_version_range}",
+        "java": ">=21"
+    }
+}
+  

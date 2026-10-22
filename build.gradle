@@ -1,0 +1,113 @@
+plugins {
+    id 'fabric-loom' version '1.10.5'
+}
+
+group = project.group
+version = project.version
+description = mod_description
+base {
+    archivesName = "${mod_id}-fabric-${minecraft_version}"
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['common/src/main/java', 'fabric/src/main/java']
+        resources.srcDirs = ['common/src/main/resources', 'fabric/src/main/resources']
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.fabricmc.net/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+}
+
+loom {
+    mixin {
+        defaultRefmapName.set("${mod_id}.refmap.json")
+    }
+    runs {
+        server {
+            server()
+            name 'Icterine Fabric 1.21.1 Test Server'
+            runDir 'run/server'
+        }
+        client {
+            client()
+            name 'Icterine Fabric 1.21.1 Test Client'
+            runDir 'run/client'
+        }
+    }
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
+
+processResources {
+    def expandProps = [
+            version: project.version,
+            group: project.group,
+            minecraft_version: minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            fabric_loader_version: fabric_loader_version,
+            mod_name: mod_name,
+            mod_author: mod_author,
+            mod_id: mod_id,
+            license: license,
+            description: mod_description,
+            issue_tracker: issue_tracker,
+            source_code: source_code,
+            discord: discord
+    ]
+    filesMatching(['fabric.mod.json', 'icterine.mixins.json', 'icterine.fabric.mixins.json', 'icterine.yml']) {
+        expand expandProps
+    }
+    inputs.properties(expandProps)
+}
+
+tasks.named('jar') {
+    from('LICENSE') {
+        rename { "${it}_${mod_name}" }
+    }
+    manifest.attributes(
+            'Specification-Title': mod_name,
+            'Specification-Vendor': mod_author,
+            'Specification-Version': project.version,
+            'Implementation-Title': project.name,
+            'Implementation-Version': project.version,
+            'Implementation-Vendor': mod_author,
+            'Built-On-Minecraft': minecraft_version
+    )
+}
+
+tasks.register('sourceDistribution', Zip) {
+    archiveBaseName = 'Icterine-Unofficial-Fabric-1.21.1'
+    archiveClassifier = 'sources'
+    from('README.md', 'LICENSE', 'build.gradle', 'settings.gradle', 'gradle.properties', 'gradlew', 'gradlew.bat')
+    from('gradle/wrapper') {
+        include 'gradle-wrapper.jar', 'gradle-wrapper.properties'
+        into 'gradle/wrapper'
+    }
+    from('common/src/main/java') { into 'common/src/main/java' }
+    from('common/src/main/resources') { into 'common/src/main/resources' }
+    from('fabric/src/main/java') { into 'fabric/src/main/java' }
+    from('fabric/src/main/resources') { into 'fabric/src/main/resources' }
+}
+
+tasks.named('assemble') {
+    dependsOn tasks.named('sourceDistribution')
+}
+
